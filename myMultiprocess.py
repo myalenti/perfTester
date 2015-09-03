@@ -9,6 +9,7 @@ import multiprocessing
 import sys
 import getopt
 import ast
+import json
 from pymongo import MongoClient, InsertOne
 
 logging.basicConfig(level=logging.INFO,
@@ -23,11 +24,13 @@ def usage():
     print "     -b use bulk inserts default is false"
     print "     -s <size of the bulk insert> default is 10"
     print "     -r <number of characters to pad wih> 124"
+    print "     -U <db username>"
+    print "     -P <db password>"
     print "     --level <DEBUG,INFO,WARNING>"
     
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "c:p:hbs:r:", ["counter=", "process=", "level="])
+    opts, args = getopt.getopt(sys.argv[1:], "c:p:hbs:r:U:P:", ["counter=", "process=", "level="])
     logging.debug("Operation list length is : %d " % len(opts))
 except getopt.GetoptError:
     print "You provided invalid command line switches."
@@ -61,6 +64,12 @@ for opt, arg in opts:
     elif opt in ("-r"):
         print "Padding size set to: ", arg
         padSize = int(arg)
+    elif opt in ("-U"):
+        print "Username set to: ", arg
+        username = arg
+    elif opt in ("-P"):
+        print "Password set to: ", arg
+        password = arg
     elif opt in ("--level"):
         print "Log Level set to : ", arg
         arg = arg.upper() 
@@ -104,6 +113,7 @@ def worker(record_count):
     logging.info("Starting Process %s %d at %s" % (p.name, p.pid, start_time))
     logging.info("Inserting %d records" % record_count)
     connection = MongoClient('localhost',27017)
+    connection.admin.authenticate(username,password)
     db = connection.testDB
     col_test = db.test
     for i in xrange(record_count):
@@ -127,6 +137,7 @@ def bulkworker(record_count, bulkSize):
     logging.info("Starting Process %s %d at %s" % (p.name, p.pid, start_time))
     logging.info("Inserting %d records" % record_count)
     connection = MongoClient('localhost',27017)
+    connection.admin.authenticate(username,password)
     db = connection.testDB
     col_test = db.test
     request = []
@@ -139,13 +150,14 @@ def bulkworker(record_count, bulkSize):
             #request.append(InsertOne({"a":"1", "b":"hello mark"}))
             request.append(InsertOne({"pad": record['pad']}))
             #print request
-        col_test.bulk_write(request)
+        bulk_result = col_test.bulk_write(request)
+        #logging.debug("Result Dump : %s" % json.dumps(bulk_result.bulk_api_result))
+        #logging.debug("Bulk Write result %d of %d" %(bulkSize, ????))
         request = []
     end_time = time.time()
     logging.info("Elapsed Time for job %s was %g seconds" % (p.name , end_time - start_time))
     
     
-    return
 
 logging.debug("Size of record is : %f bytes" % (sys.getsizeof(record['pad'])))
 jobs = []
