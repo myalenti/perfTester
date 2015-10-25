@@ -27,10 +27,13 @@ def usage():
     print "     -U <db username>"
     print "     -P <db password>"
     print "     --level <DEBUG,INFO,WARNING>"
+    print " 	-t targetserver"
+    print " 	-x port"
+    print " 	-d drop collection after execution"
     
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "c:p:hbs:r:U:P:", ["counter=", "process=", "level="])
+    opts, args = getopt.getopt(sys.argv[1:], "c:p:dhbs:r:U:P:t:x:", ["counter=", "process=", "level="])
     logging.debug("Operation list length is : %d " % len(opts))
 except getopt.GetoptError:
     print "You provided invalid command line switches."
@@ -45,12 +48,14 @@ process_count = 1
 padSize = 124
 message = ""
 global record
-
+drop=False
 
 
 for opt, arg in opts:
     #print "Tuple is " , opt, arg
-    if opt in ("-b"):
+    if opt in ("-d"):
+        drop=True
+    elif opt in ("-b"):
         bulk=True
     elif opt in ("-c" , "--counter"):
         print "Total Records set to : ", arg
@@ -66,10 +71,20 @@ for opt, arg in opts:
         padSize = int(arg)
     elif opt in ("-U"):
         print "Username set to: ", arg
+        global username
         username = arg
     elif opt in ("-P"):
         print "Password set to: ", arg
+        global password
         password = arg
+    elif opt in ("-x"):
+	print "Port is set to: ", arg
+	global port
+	port = int(arg)
+    elif opt in ("-t"):
+	print "Target is set to: ", arg
+	global target 
+	target = arg
     elif opt in ("--level"):
         print "Log Level set to : ", arg
         arg = arg.upper() 
@@ -112,7 +127,7 @@ def worker(record_count):
     start_time = time.time()
     logging.info("Starting Process %s %d at %s" % (p.name, p.pid, start_time))
     logging.info("Inserting %d records" % record_count)
-    connection = MongoClient('localhost',27017)
+    connection = MongoClient(target,port)
     connection.admin.authenticate(username,password)
     db = connection.testDB
     col_test = db.test
@@ -128,6 +143,13 @@ def worker(record_count):
     
     
     return
+def dropper():
+    connection = MongoClient(target,port)
+    connection.admin.authenticate(username,password)
+    db = connection.testDB
+    col_test = db.test
+    logging.info("Dropping collection")
+    col_test.drop()
 
 def bulkworker(record_count, bulkSize):
     
@@ -136,7 +158,7 @@ def bulkworker(record_count, bulkSize):
     start_time = time.time()
     logging.info("Starting Process %s %d at %s" % (p.name, p.pid, start_time))
     logging.info("Inserting %d records" % record_count)
-    connection = MongoClient('localhost',27017)
+    connection = MongoClient(target,port)
     connection.admin.authenticate(username,password)
     db = connection.testDB
     col_test = db.test
@@ -175,4 +197,7 @@ logging.debug('Main process is %s %s' % (main_process.name,main_process.pid))
 
 for i in jobs:
     i.join()
-    
+   
+if drop == True:
+	dropper()
+ 
