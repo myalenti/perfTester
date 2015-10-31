@@ -26,14 +26,15 @@ def usage():
     print "     -r <number of characters to pad wih> 124"
     print "     -U <db username>"
     print "     -P <db password>"
-    print "     --level <DEBUG,INFO,WARNING>"
-    print " 	-t targetserver"
-    print " 	-x port"
-    print " 	-d drop collection after execution"
+    print '     --level <DEBUG,INFO,WARNING>'
+    print "     -t targetserver"
+    print "     -x port"
+    print "     -d drop collection after execution"
+    print "     -o Use ordered bulk writes (defaults is false)"
     
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "c:p:dhbs:r:U:P:t:x:", ["counter=", "process=", "level="])
+    opts, args = getopt.getopt(sys.argv[1:], "c:p:dhbos:r:U:P:t:x:", ["counter=", "process=", "level="])
     logging.debug("Operation list length is : %d " % len(opts))
 except getopt.GetoptError:
     print "You provided invalid command line switches."
@@ -49,7 +50,15 @@ padSize = 124
 message = ""
 global record
 drop=False
-
+ord=False
+global port
+port=27017
+global username
+username=""
+global password
+password=""
+global target
+target="localhost"
 
 for opt, arg in opts:
     #print "Tuple is " , opt, arg
@@ -66,25 +75,27 @@ for opt, arg in opts:
     elif opt in ("-s"):
         print "Bulk Bucket size set to: ", arg
         bulkSize = int(arg)
+    elif opt in ("-o"):
+        ord=True
     elif opt in ("-r"):
         print "Padding size set to: ", arg
         padSize = int(arg)
     elif opt in ("-U"):
         print "Username set to: ", arg
-        global username
+        #global username
         username = arg
     elif opt in ("-P"):
         print "Password set to: ", arg
-        global password
+        #global password
         password = arg
     elif opt in ("-x"):
-	print "Port is set to: ", arg
-	global port
-	port = int(arg)
+    	print "Port is set to: ", arg
+    	#global port
+        port = int(arg)
     elif opt in ("-t"):
-	print "Target is set to: ", arg
-	global target 
-	target = arg
+    	print "Target is set to: ", arg
+    	#global target 
+    	target = arg
     elif opt in ("--level"):
         print "Log Level set to : ", arg
         arg = arg.upper() 
@@ -145,13 +156,14 @@ def worker(record_count):
     return
 def dropper():
     connection = MongoClient(target,port)
-    connection.admin.authenticate(username,password)
+    if username != "":
+        connection.admin.authenticate(username,password)
     db = connection.testDB
     col_test = db.test
     logging.info("Dropping collection")
     col_test.drop()
 
-def bulkworker(record_count, bulkSize):
+def bulkworker(record_count, bulkSize, ord):
     
     p = multiprocessing.current_process()
     logging.debug("You have entered the bulk writer process for process %s" % p.name)
@@ -159,9 +171,13 @@ def bulkworker(record_count, bulkSize):
     logging.info("Starting Process %s %d at %s" % (p.name, p.pid, start_time))
     logging.info("Inserting %d records" % record_count)
     connection = MongoClient(target,port)
-    connection.admin.authenticate(username,password)
+    if username != "":  
+        connection.admin.authenticate(username,password)
     db = connection.testDB
     col_test = db.test
+    
+        
+    
     request = []
     i = 0
  
@@ -172,7 +188,7 @@ def bulkworker(record_count, bulkSize):
             #request.append(InsertOne({"a":"1", "b":"hello mark"}))
             request.append(InsertOne({"pad": record['pad']}))
             #print request
-        bulk_result = col_test.bulk_write(request)
+        bulk_result = col_test.bulk_write(request,ordered=ord)
         #logging.debug("Result Dump : %s" % json.dumps(bulk_result.bulk_api_result))
         #logging.debug("Bulk Write result %d of %d" %(bulkSize, ????))
         request = []
@@ -188,7 +204,7 @@ for i in range(process_count):
         p = multiprocessing.Process(target=worker, args=(quotient,))
         jobs.append(p)
     else:
-        p = multiprocessing.Process(target=bulkworker, args=(quotient,bulkSize,))
+        p = multiprocessing.Process(target=bulkworker, args=(quotient,bulkSize,ord))
         jobs.append(p)
     p.start() 
 
