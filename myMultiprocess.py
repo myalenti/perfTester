@@ -17,10 +17,10 @@ logging.basicConfig(level=logging.INFO,
                     )
 def usage():
     print "Performance tester usage:"
-    print "Required command line options: "
     print "     -c,--counter <number of records to insert> default is 10k"
     print "     -p,--process <number of processes to spawn> default is 1"
-    print "Optional Options : "
+    print "     -C <collection Name> for documents to be loaded into"
+    print "     -D <DB Name> to use to load data"
     print "     -b use bulk inserts default is false"
     print "     -s <size of the bulk insert> default is 10"
     print "     -r <number of characters to pad wih> 124"
@@ -34,7 +34,7 @@ def usage():
     
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "c:p:dhbos:r:U:P:t:x:", ["counter=", "process=", "level="])
+    opts, args = getopt.getopt(sys.argv[1:], "c:C:D:p:dhbos:r:U:P:t:x:", ["counter=", "process=", "level="])
     logging.debug("Operation list length is : %d " % len(opts))
 except getopt.GetoptError:
     print "You provided invalid command line switches."
@@ -59,6 +59,10 @@ global password
 password=""
 global target
 target="localhost"
+global tdb
+tdb="testDB"
+global tcoll
+tcoll = "test"
 
 for opt, arg in opts:
     #print "Tuple is " , opt, arg
@@ -80,6 +84,12 @@ for opt, arg in opts:
     elif opt in ("-r"):
         print "Padding size set to: ", arg
         padSize = int(arg)
+    elif opt in ("-D"):
+	print "Database set to: " , arg
+	tdb=str(arg)
+    elif opt in ("-C"):
+	print "Collection set to: " , arg
+	tcoll=str(arg)
     elif opt in ("-U"):
         print "Username set to: ", arg
         #global username
@@ -139,9 +149,10 @@ def worker(record_count):
     logging.info("Starting Process %s %d at %s" % (p.name, p.pid, start_time))
     logging.info("Inserting %d records" % record_count)
     connection = MongoClient(target,port)
-    connection.admin.authenticate(username,password)
-    db = connection.testDB
-    col_test = db.test
+    if username != "":
+        connection.admin.authenticate(username,password)
+    db = connection[tdb]
+    col_test = db[tcoll]
     for i in xrange(record_count):
         #myInserts = col_test.insert_one({"a":"1", "b":"hello mark"})
         #myInserts = col_test.insert_one(record)
@@ -158,10 +169,10 @@ def dropper():
     connection = MongoClient(target,port)
     if username != "":
         connection.admin.authenticate(username,password)
-    db = connection.testDB
-    col_test = db.test
+    db = connection[tdb]
+    col = db[tcoll]
     logging.info("Dropping collection")
-    col_test.drop()
+    col.drop()
 
 def bulkworker(record_count, bulkSize, ord):
     
@@ -173,8 +184,8 @@ def bulkworker(record_count, bulkSize, ord):
     connection = MongoClient(target,port)
     if username != "":  
         connection.admin.authenticate(username,password)
-    db = connection.testDB
-    col_test = db.test
+    db = connection[tdb]
+    col_test = db[tcoll]
     
         
     
