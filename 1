@@ -164,7 +164,7 @@ def connector():
     		except :
 			retries += 1
 			print "connection failure, attempting again"
-			print "Attempted " + str(retries) + " retries"
+			print "Attempted " + str(retries) + "retries"
 			connector()
 	else:
 		print "Number of connection retries exhausted, exiting"
@@ -187,12 +187,7 @@ def worker(record_count):
     db = connection[tdb]
     col_test = db[tcoll]
     for i in xrange(record_count):
-	try:
-    		myInserts = col_test.insert_one({"pad": record['pad']})
-	except:
-		time.sleep(1)
-		myInserts = col_test.insert_one({"pad": record['pad']})
-
+    	myInserts = col_test.insert_one({"pad": record['pad']})
        	time.sleep(1)
     end_time = time.time()
     
