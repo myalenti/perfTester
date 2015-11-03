@@ -187,19 +187,19 @@ def worker(record_count):
     db = connection[tdb]
     col_test = db[tcoll]
     for i in xrange(record_count):
-	try:
-    		myInserts = col_test.insert_one({"pad": record['pad']})
+    	try:
+            myInserts = col_test.insert_one({"pad": record['pad']})
 	
-    except:
-        rcounter = 0
-		while connection.is_primary == False:
-            print "Waiting for client to establish a connection to new primary"
-            time.sleep(1)
-            rcounter += 1
-            if rcounter > 10:
-                print "Connection to new primary could not be established, exiting"
-                sys.exit()
-        myInserts = col_test.insert_one({"pad": record['pad']})
+        except:
+            rcounter = 0
+    		while connection.is_primary == False:
+                print "Waiting for client to establish a connection to new primary"
+                time.sleep(1)
+                rcounter += 1
+                if rcounter > 10:
+                    print "Connection to new primary could not be established, exiting"
+                    sys.exit()
+            myInserts = col_test.insert_one({"pad": record['pad']})
 
        	time.sleep(1)
     end_time = time.time()
