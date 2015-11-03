@@ -196,10 +196,12 @@ def worker(record_count):
                 	print "Waiting for client to establish a connection to new primary"
                 	time.sleep(1)
                 	rcounter += 1
-                if rcounter > 10:
-                    	print "Connection to new primary could not be established, exiting"
-                    	sys.exit()
+                	if rcounter > 40:
+                    		print "Connection to new primary could not be established, exiting"
+                    		sys.exit()
+		print "Re-attempting insert"
             	myInserts = col_test.insert_one({"pad": record['pad']})
+		print "Re-Insert Completed"
 
        	time.sleep(1)
     end_time = time.time()
