@@ -194,8 +194,8 @@ def worker(record_count):
                 raise NameError("WriteFailed")
             print "Write successful"
         except:
-            rcounter = 0
-    		while connection.is_primary == False:
+                rcounter = 0
+                while connection.is_primary == False:
                 	print "Waiting for client to establish a connection to new primary"
                 	time.sleep(1)
                 	rcounter += 1
@@ -203,13 +203,13 @@ def worker(record_count):
                     		print "Connection to new primary could not be established, exiting"
                     		sys.exit()
         	
-            if myInserts.acknowledged == False:
-                try:
-                    myInserts = col_test.insert_one({"pad": record['pad']})
-                except:
-                    print "Second attempt at insert failed - system is non-recoverable, Exiting"
-                    sys.exit()
-            print "Re-Insert Completed"
+                if myInserts.acknowledged == False:
+                    try:
+                        myInserts = col_test.insert_one({"pad": record['pad']})
+                    except:
+                        print "Second attempt at insert failed - system is non-recoverable, Exiting"
+                        sys.exit()
+                print "Re-Insert Completed"
 
        	time.sleep(1)
     end_time = time.time()
