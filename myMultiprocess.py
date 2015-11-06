@@ -192,7 +192,8 @@ def worker(record_count):
             if myInserts.acknowledged == False:
                 print "Write Failed"
                 raise NameError("WriteFailed")
-            print "Write successful"
+            else:
+                print "Write successful"
         except:
                 rcounter = 0
                 while connection.is_primary == False:
@@ -209,7 +210,8 @@ def worker(record_count):
                     except:
                         print "Second attempt at insert failed - system is non-recoverable, Exiting"
                         sys.exit()
-                print "Re-Insert Completed"
+                else:
+                    print "Original Insert Completed"
 
        	time.sleep(1)
     end_time = time.time()
