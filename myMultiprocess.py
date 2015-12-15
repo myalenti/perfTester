@@ -62,7 +62,7 @@ password=""
 global target
 target="localhost"
 global tdb
-tdb="testDB"
+tdb="testDBx"
 global tcoll
 tcoll = "test"
 global repSet
@@ -189,13 +189,10 @@ def worker(record_count):
     for i in xrange(record_count):
     	try:
             myInserts = col_test.insert_one({"pad": record['pad']})
-            if myInserts.acknowledged == False:
-                print "Write Failed"
-                raise NameError("WriteFailed")
-            else:
-                print "Write successful"
+            print "Write successful"
         except:
                 rcounter = 0
+                print "Write exception, failed"
                 while connection.is_primary == False:
                 	print "Waiting for client to establish a connection to new primary"
                 	time.sleep(1)
@@ -203,15 +200,8 @@ def worker(record_count):
                 	if rcounter > 40:
                     		print "Connection to new primary could not be established, exiting"
                     		sys.exit()
-        	
-                if myInserts.acknowledged == False:
-                    try:
-                        myInserts = col_test.insert_one({"pad": record['pad']})
-                    except:
-                        print "Second attempt at insert failed - system is non-recoverable, Exiting"
-                        sys.exit()
-                else:
-                    print "Original Insert Completed"
+        
+                myInserts = col_test.insert_one({"pad": record['pad']})
 
        	time.sleep(1)
     end_time = time.time()
