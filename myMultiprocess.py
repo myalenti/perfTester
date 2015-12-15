@@ -164,7 +164,7 @@ def connector():
     		except :
 			retries += 1
 			print "connection failure, attempting again"
-			print "Attempted " + str(retries) + "retries"
+			print "Attempted " + str(retries) + " retries"
 			connector()
 	else:
 		print "Number of connection retries exhausted, exiting"
@@ -187,7 +187,32 @@ def worker(record_count):
     db = connection[tdb]
     col_test = db[tcoll]
     for i in xrange(record_count):
-    	myInserts = col_test.insert_one({"pad": record['pad']})
+    	try:
+            myInserts = col_test.insert_one({"pad": record['pad']})
+            if myInserts.acknowledged == False:
+                print "Write Failed"
+                raise NameError("WriteFailed")
+            else:
+                print "Write successful"
+        except:
+                rcounter = 0
+                while connection.is_primary == False:
+                	print "Waiting for client to establish a connection to new primary"
+                	time.sleep(1)
+                	rcounter += 1
+                	if rcounter > 40:
+                    		print "Connection to new primary could not be established, exiting"
+                    		sys.exit()
+        	
+                if myInserts.acknowledged == False:
+                    try:
+                        myInserts = col_test.insert_one({"pad": record['pad']})
+                    except:
+                        print "Second attempt at insert failed - system is non-recoverable, Exiting"
+                        sys.exit()
+                else:
+                    print "Original Insert Completed"
+
        	time.sleep(1)
     end_time = time.time()
     
