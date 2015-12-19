@@ -95,14 +95,14 @@ for opt, arg in opts:
         print "Padding size set to: ", arg
         padSize = int(arg)
     elif opt in ("-D"):
-	print "Database set to: " , arg
-	tdb=str(arg)
+        print "Database set to: " , arg
+        tdb=str(arg)
     elif opt in ("-R"):
         print "Replica Set name  set to: " , arg
         repSet=str(arg)
     elif opt in ("-C"):
-	print "Collection set to: " , arg
-	tcoll=str(arg)
+        print "Collection set to: " , arg
+        tcoll=str(arg)
     elif opt in ("-U"):
         print "Username set to: ", arg
         #global username
@@ -185,7 +185,7 @@ def findWorker(record_count):
     logging.info("Finding %d records" % record_count)
     
     connection = connector()
-    db = connection[tbd]
+    db = connection[tdb]
     col_test = db[tcoll]
     findString = { "fld2" : "filios" }
     
