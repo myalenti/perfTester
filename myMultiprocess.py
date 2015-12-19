@@ -32,11 +32,12 @@ def usage():
     print "     -d drop collection after execution"
     print "     -o Use ordered bulk writes (defaults is false)"
     print "     -r <replicaSetName> Name of replica set to connect to"
+    print "     -m issue find requests - incomplete - testing phase "
 
     
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "R:c:C:D:p:dhbos:r:U:P:t:x:", ["counter=", "process=", "level="])
+    opts, args = getopt.getopt(sys.argv[1:], "R:c:C:D:p:dhboms:r:U:P:t:x:", ["counter=", "process=", "level="])
     logging.debug("Operation list length is : %d " % len(opts))
 except getopt.GetoptError:
     print "You provided invalid command line switches."
@@ -71,6 +72,7 @@ global retry_count
 retry_count=10
 global retries
 retries=0
+findOn=False
 
 for opt, arg in opts:
     #print "Tuple is " , opt, arg
@@ -117,6 +119,9 @@ for opt, arg in opts:
     	print "Target is set to: ", arg
     	#global target 
     	target = arg
+    elif opt in ("-m"):
+        print "Issuing Find Commands"
+        findOn = True
     elif opt in ("--level"):
         print "Log Level set to : ", arg
         arg = arg.upper() 
@@ -172,7 +177,21 @@ def connector():
 	return
 
 
-
+def findWorker(record_count):
+    p = multiprocessing.current_process()
+    logging.debug("You have entered the single threaded findWorker for the process %s" % p.name)
+    start_time = time.time()
+    logging.info("Starting Process %s %d at %s" % (p.name, p.pid, start_time))
+    logging.info("Finding %d records" % record_count)
+    
+    connection = connector()
+    db = connection[tbd]
+    col_test = db[tcoll]
+    findString = { "fld2" : "filios" }
+    
+    for i in xrange(record_count):
+        col_test.find(findStirng)
+    
 def worker(record_count):
     
     p = multiprocessing.current_process()
@@ -268,10 +287,15 @@ def bulkworker(record_count, bulkSize, ord):
 
 logging.debug("Size of record is : %f bytes" % (sys.getsizeof(record['pad'])))
 jobs = []
+
+
 for i in range(process_count):
-    if bulk == False: 
-        p = multiprocessing.Process(target=worker, args=(quotient,))
-        jobs.append(p)
+    if bulk == False:
+        if findOn == True:
+            p = multiprocessing.Process(target=findWorker, args=(quotient,))
+        else:
+            p = multiprocessing.Process(target=worker, args=(quotient,))
+            jobs.append(p)
     else:
         p = multiprocessing.Process(target=bulkworker, args=(quotient,bulkSize,ord))
         jobs.append(p)
