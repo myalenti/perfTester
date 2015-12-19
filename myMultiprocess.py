@@ -187,10 +187,16 @@ def findWorker(record_count):
     connection = connector()
     db = connection[tdb]
     col_test = db[tcoll]
-    findString = { "fld2" : "filios" }
+    print col_test
+    findString = { "fld2" : "dolor sit amet, consetetur" }
+    findString2 = { "fld_xx" : "Non si Trova" }
+    findString3 = { "fld9" : 411900 }
     
     for i in xrange(record_count):
-        col_test.find(findString)
+        r = col_test.find(findString)
+        s = col_test.find(findString2)
+        t = col_test.find(findString3)
+        print str(r.count()) + " " + str(s.count()) + " " + str(t.count())
     
 def worker(record_count):
     
