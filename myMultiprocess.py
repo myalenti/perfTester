@@ -190,7 +190,7 @@ def findWorker(record_count):
     findString = { "fld2" : "filios" }
     
     for i in xrange(record_count):
-        col_test.find(findStirng)
+        col_test.find(findString)
     
 def worker(record_count):
     
