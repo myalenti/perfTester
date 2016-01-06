@@ -14,6 +14,7 @@ import names
 import random
 from faker import Factory
 from collections import OrderedDict
+from JsonDocuments import JsonDocuments
 
 from pymongo import MongoClient, InsertOne
 
@@ -80,6 +81,7 @@ global retries
 retries=0
 findOn=False
 docType=1
+jdoc = JsonDocuments()
 
 for opt, arg in opts:
     #print "Tuple is " , opt, arg
@@ -221,7 +223,7 @@ def worker(record_count):
     col_test = db[tcoll]
     for i in xrange(record_count):
     	try:
-            myInserts = col_test.insert_one(generateDocument(docType))
+            myInserts = col_test.insert_one(jdoc.generateDocument(docType,message))
             print "Write successful"
         except:
                 rcounter = 0
@@ -234,7 +236,7 @@ def worker(record_count):
                     		print "Connection to new primary could not be established, exiting"
                     		sys.exit()
         
-                myInserts = col_test.insert_one(generateDocument(docType))
+                myInserts = col_test.insert_one(jdoc.generateDocument(docType,message))
 
        	time.sleep(1)
     end_time = time.time()
@@ -242,76 +244,6 @@ def worker(record_count):
     logging.info("Elapsed Time for job %s was %g seconds" % (p.name , end_time - start_time))
     
     return
-
-def generateDocument(docType):
-    faker = Factory.create()
-    if docType == 1:
-        randSequence = random.sample(xrange(9999),30)
-        fakeText = faker.text()
-        firstname = names.get_first_name()
-        lastname = names.get_last_name()
-        email = firstname + "." + lastname + "@mongodb.com"
-        record = OrderedDict() 
-        record['firstName'] = firstname
-        record['lastName'] = lastname
-        record['email'] = email
-        record['homeAddress'] = faker.address()
-        record['officeAddress'] = faker.address()
-        record['age'] = random.randint(20, 72)
-        record['commuteDistance'] = random.randint(2, 200)
-        record['familySize'] = random.randint(2, 10)
-        record['saTeamNum'] = random.randint(1, 500)
-        record['telsaVin'] = faker.md5()
-        record['nfld1'] = randSequence[0]
-        record['nfld2'] = randSequence[2]
-        record['nfld3'] = randSequence[3]
-        record['nfld4'] = randSequence[4]
-        record['nfld5'] = randSequence[5]
-        record['nfld6'] = randSequence[6]
-        record['nfld7'] = randSequence[7]
-        record['nfld8'] = randSequence[8]
-        record['nfld9'] = randSequence[9]
-        record['nfld10'] = randSequence[10]
-        record['nfld11'] = randSequence[11]
-        record['nfld12'] = randSequence[12]
-        record['nfld13'] = randSequence[13]
-        record['nfld14'] = randSequence[14]
-        record['nfld15'] = randSequence[15]
-        record['nfld16'] = randSequence[16]
-        record['nfld17'] = randSequence[17]
-        record['nfld18'] = randSequence[18]
-        record['nfld19'] = randSequence[19]
-        record['nfld20'] = randSequence[20]
-        record['nfld21'] = randSequence[21]
-        record['nfld22'] = randSequence[22]
-        record['nfld23'] = randSequence[23]
-        record['nfld24'] = randSequence[24]
-        record['nfld25'] = randSequence[25]
-        record['nfld26'] = randSequence[26]
-        record['nfld27'] = randSequence[27]
-        record['nfld28'] = randSequence[28]
-        record['nfld29'] = randSequence[29]
-        record['nfld30'] = randSequence[1]
-        record['strfld1'] = fakeText[0:20]
-        record['strfld2'] = fakeText[21:40]
-        record['strfld3'] = fakeText[41:60]
-        record['strfld4'] = fakeText[61:80]
-        record['strfld5'] = fakeText[81:100]
-        record['strfld6'] = fakeText[101:120]
-        record['strfld7'] = fakeText[121:140]
-        record['strfld8'] = fakeText[141:160]
-        record['strfld9'] = fakeText[161:180]
-        record['strfld10'] = fakeText[181:200]
-        
-        #print record
-        return record
-    if docType == 2:
-        record = {}
-        record['pad'] = message
-        #print record
-        return record
-        
-
 
 def dropper():
     connection = MongoClient(target,port,replicaSet=repSet)
@@ -325,6 +257,7 @@ def dropper():
     col.drop()
 
 def bulkworker(record_count, bulkSize, ord):
+    
     
     p = multiprocessing.current_process()
     logging.debug("You have entered the bulk writer process for process %s" % p.name)
@@ -348,7 +281,8 @@ def bulkworker(record_count, bulkSize, ord):
         
         for r in xrange(bulkSize):
             #request.append(InsertOne({"a":"1", "b":"hello mark"}))
-            request.append(InsertOne(generateDocument(docType)))
+            #request.append(InsertOne(generateDocument(docType)))
+            request.append(InsertOne(jdoc.generateDocument(docType,message)))
             #print request
         bulk_result = col_test.bulk_write(request,ordered=ord)
         #logging.debug("Result Dump : %s" % json.dumps(bulk_result.bulk_api_result))
@@ -359,7 +293,7 @@ def bulkworker(record_count, bulkSize, ord):
     
     
 
-logging.debug("Size of record is : %f bytes" % (sys.getsizeof(generateDocument(docType))))
+logging.debug("Size of record is : %f bytes" % (sys.getsizeof(jdoc.generateDocument(docType,message))))
 jobs = []
 
 
