@@ -275,15 +275,19 @@ def bulkworker(record_count, bulkSize, ord):
     
     request = []
     i = 0
- 
-    while (i < record_count):
-        i = i + bulkSize
+    balance = record_count
+    while (balance > 0 ):
         
-        for r in xrange(bulkSize):
-            #request.append(InsertOne({"a":"1", "b":"hello mark"}))
-            #request.append(InsertOne(generateDocument(docType)))
+        if balance > bulkSize:
+            balance = balance - bulkSize
+            batchSize = bulkSize
+        else:
+            batchSize = balance
+            balance = 0
+                
+        for r in xrange(batchSize):
             request.append(InsertOne(jdoc.generateDocument(docType,message)))
-            #print request
+            
         bulk_result = col_test.bulk_write(request,ordered=ord)
         #logging.debug("Result Dump : %s" % json.dumps(bulk_result.bulk_api_result))
         #logging.debug("Bulk Write result %d of %d" %(bulkSize, ????))
