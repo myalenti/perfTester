@@ -288,7 +288,15 @@ def bulkworker(record_count, bulkSize, ord):
         for r in xrange(batchSize):
             request.append(InsertOne(jdoc.generateDocument(docType,message)))
             
-        bulk_result = col_test.bulk_write(request,ordered=ord)
+        try : 
+            bulk_result = col_test.bulk_write(request,ordered=ord)
+        except pymongo.errors.BulkWriteError as e:
+            #e = sys.exc_info()[0]
+            print e.details
+            #attrs = vars(e)
+            #print ', '.join("%s: %s" % item for item in attrs.items())
+            #print e
+            exit()
         #logging.debug("Result Dump : %s" % json.dumps(bulk_result.bulk_api_result))
         #logging.debug("Bulk Write result %d of %d" %(bulkSize, ????))
         request = []
@@ -296,8 +304,9 @@ def bulkworker(record_count, bulkSize, ord):
     logging.info("Elapsed Time for job %s was %g seconds" % (p.name , end_time - start_time))
     
     
-
-logging.debug("Size of record is : %f bytes" % (sys.getsizeof(jdoc.generateDocument(docType,message))))
+testDoc = jdoc.generateDocument(docType,message)
+logging.debug("Size of record is : %f bytes" % (sys.getsizeof(testDoc)))
+#logging.debug("Size of record is : %f bytes" % (sys.getsizeof(jdoc.generateDocument(docType,message))))
 jobs = []
 
 

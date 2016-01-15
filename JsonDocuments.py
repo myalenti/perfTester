@@ -10,9 +10,10 @@ import json
 import names
 import random
 import numpy as np
+import os
 from faker import Factory
 from collections import OrderedDict
-from datetime import date
+from datetime import date, datetime
 
 class JsonDocuments():
     
@@ -22,23 +23,26 @@ class JsonDocuments():
     def generateDocument(self, docType, message):
         #self.dockType = docType
         faker = Factory.create()
+        faker.seed(os.getpid())
         if docType == 1:
             randSequence = random.sample(xrange(9999),30)
             fakeText = faker.text()
             firstname = names.get_first_name()
             lastname = names.get_last_name()
             email = firstname + "." + lastname + "@mongodb.com"
-            record = OrderedDict() 
+            record = OrderedDict()
+            record['name']  = OrderedDict()
             record['name']['firstName'] = firstname
             record['name']['lastName'] = lastname
+            record['contact'] = OrderedDict()
             record['contact']['email'] = email
             record['contact']['homeAddress'] = faker.address()
             record['contact']['officeAddress'] = faker.address()
             record['age'] = random.randint(20, 72)
             record['commuteDistance'] = random.randint(2, 200)
             record['familySize'] = random.randint(2, 10)
-            record['saTeamNum'] = random.randint(1, 500)
-            record['telsaVin'] = faker.md5()
+            #record['saTeamNum'] = random.randint(1, 500)
+            #record['telsaVin'] = faker.md5()
             record['nfld1'] = randSequence[0]
             record['nfld2'] = randSequence[2]
             record['nfld3'] = randSequence[3]
@@ -145,10 +149,121 @@ class JsonDocuments():
             record['drivers'] = []
             record['employee'] = OrderedDict()
             record['employee']['employeeId'] = "employeeId"
-            record['employee']['saTeamNum'] = random.randint(1, 500)
-            record['employee']['saRegionNum'] = random.randint(1, 3) * 1000
+            record['employee']['saTeam'] = (random.randint(1, 3) * 1000) + random.randint(1, 500)
+            #record['employee']['saRegionNum'] = random.randint(1, 3) * 1000
             
             return record
+        if docType == 4:
+            
+            efficiency = random.triangular(.75,.99)
+            months = [1,2,3,4,5,6,7,8,9,10,11,12]
+            q1= months[0:3]
+            q2= months[3:6]
+            q3= months[6:9]
+            q4= months[9:12]
+            qA= months[0:12]
+            
+            record = OrderedDict()
+            #record['vin'] = faker.md5()
+            record['_id'] = faker.uuid4()
+            #record['_id'] = faker.md5()
+            
+            record['metrics'] = []
+            record['summary'] = []
+            for i in [2024, 2025]:
+                
+                for r in months:
+                    randSequence = random.sample(xrange(9999),30)
+                    #record['metrics'][i][r] = OrderedDict()
+                    uploadDate = datetime(i,r,28)
+                    record['metrics'].append( OrderedDict() )
+                    #record['metrics'].append( { 'uploadDate' : uploadDate } )
+                    latest = record['metrics'][(len (record['metrics'])-1)]
+                    latest['uploadDate'] = uploadDate
+                    latest['milesDriven'] = randSequence[0]
+                    latest['energyUsed'] = (randSequence[0] * 0.31) / efficiency
+                    latest['tolls'] = random.randint(0, 500)
+                    latest['avgSpeed'] = random.randint(30,50)
+                    latest['topSpeed'] = random.randint(65, 135)
+                    latest['elevationChange'] = random.randint(100, 10000)
+                    latest['accelerationMiles'] = randSequence[0] * 0.3
+                    latest['decelerationMiles'] = randSequence[0] * 0.1
+                    latest['idleHours'] = random.randint(1,15)
+                    latest['chargeHours'] = (randSequence[0] * 10) / 60 / 60
+                
+                else:
+                    record['summary'].append( OrderedDict())
+                    slatest = record['summary'][(len (record['summary'])-1)]
+                    slatest['startDate'] = datetime((i-1),12,31)
+                    slatest['endDate'] = datetime(i,12,31)
+                    slatest['totalMilesDriven'] = sum( self.generateList(record, datetime(i,12,31), datetime( (i-1), 12,31) , 'milesDriven') )
+                    h_milesDriven = slatest['totalMilesDriven']
+                    slatest['totalEnergyUsed'] = sum( self.generateList(record, datetime(i,12,31), datetime( (i-1), 12,31) ,'energyUsed'))
+                    slatest['totalTolls'] = sum( self.generateList(record, datetime(i,12,31), datetime( (i-1), 12,31) , 'tolls'))
+                    slatest['totalElevationChange'] = sum( self.generateList(record, datetime(i,12,31), datetime( (i-1), 12,31) ,'elevationChange', ))
+                    slatest['totalAccelerationMiles'] = sum( self.generateList(record, datetime(i,12,31), datetime( (i-1), 12,31) , 'accelerationMiles', ))
+                    slatest['totalDecelerationMiles'] = sum( self.generateList(record, datetime(i,12,31), datetime( (i-1), 12,31) , 'decelerationMiles', ))
+                    slatest['totalIdleHours'] = sum( self.generateList(record, datetime(i,12,31), datetime( (i-1), 12,31) , 'idleHours', ))
+                    slatest['totalChargeHours'] = sum( self.generateList(record, datetime(i,12,31), datetime( (i-1), 12,31) , 'chargeHours', ))
+                    slatest['avgSpeed'] = np.array(self.generateList(record, datetime(i,12,31), datetime( (i-1), 12,31) , 'avgSpeed', )).mean()
+                    h_avgSpeed = slatest['avgSpeed']
+                    slatest['topSpeed'] = np.amax(self.generateList(record, datetime(i,12,31), datetime( (i-1), 12,31) , 'topSpeed', ))
+                    
+                for a,b in [ (datetime(i,1,1), datetime(i,4,1)), (datetime(i,4,1), datetime(i,7,1)), (datetime(i,7,1), datetime(i,10,1)),(datetime(i,10,1), datetime((i+1),1,1))]:
+                    record['summary'].append( OrderedDict())
+                    slatest = record['summary'][(len (record['summary'])-1)]
+                    slatest['startDate'] = a
+                    slatest['endDate'] = b
+                    slatest['totalMilesDriven'] = sum( self.generateList(record, b, a, 'milesDriven') )
+                    slatest['totalEnergyUsed'] = sum( self.generateList(record, b, a, 'energyUsed'))
+                    slatest['totalTolls'] = sum( self.generateList(record, b, a, 'tolls'))
+                    slatest['totalElevationChange'] = sum( self.generateList(record, b, a ,'elevationChange', ))
+                    slatest['totalAccelerationMiles'] = sum( self.generateList(record, b, a  , 'accelerationMiles', ))
+                    slatest['totalDecelerationMiles'] = sum( self.generateList(record, b, a  , 'decelerationMiles', ))
+                    slatest['totalIdleHours'] = sum( self.generateList(record, b,a , 'idleHours', ))
+                    slatest['totalChargeHours'] = sum( self.generateList(record, b,a  , 'chargeHours', ))
+                    slatest['avgSpeed'] = np.array(self.generateList(record, b,a  , 'avgSpeed', )).mean()
+                    slatest['topSpeed'] = np.amax(self.generateList(record, b,a  , 'topSpeed', ))
+                    
+            record['employee'] = OrderedDict()
+            for i in range(0,1):
+                #record['employee'].append( OrderedDict())
+                #dlatest = record['employee'][(len (record['employee'])-1 )]
+                team = random.randint(1, 165)
+                region = random.randint(1, 3) * 1000
+                emp_id = random.randint(1,2500000)
+                record['employee']['Team'] = team
+                record['employee']['Region'] = region
+                record['employee']['employeeId'] = (emp_id + region + team)
+                
+                
+            else:
+                record['drivers'] = []
+                record['drivers'].append( OrderedDict())
+                dlatest = record['drivers'][(len (record['drivers'])-1 )]
+                team = random.randint(1, 165)
+                region = random.randint(1, 3) * 1000
+                emp_id = random.randint(1,2500000)
+                firstname = names.get_first_name()
+                lastname = names.get_last_name()
+                dlatest['Team'] = team
+                dlatest['Region'] = region
+                dlatest['employeeId'] = (emp_id + region + team)
+                dlatest['firstName'] = firstname
+                dlatest['lastName'] = lastname
+                dlatest['milesDriven'] = h_milesDriven - (h_milesDriven * efficiency) 
+                dlatest['hoursDriven'] = h_milesDriven  / h_avgSpeed
+            return record
+        
+        if docType == 5:
+            for r in [1000, 2000, 3000]:
+                for i in range(1,167):
+                    record = OrderedDict()
+                    record['team'] = i
+                    record['region'] = r
+                    record['managerName'] = names.get_full_name()
+            return record
+            
         
     def getRandMonth(self):
         return random.choice([1,2,3,4,5,6,7,8,9,10,11,12])
@@ -156,10 +271,11 @@ class JsonDocuments():
     def getRandYear(self):
         return random.choice([2024,2025])
     
-    def generateList(self, record, year, key, quarter):
+    def generateList(self, record, topDate, bottomDate, stat):
         statsList = []
-        for i in quarter:
-            statsList.append(record['metrics'][year][i][key])
+        for i in record['metrics']:
+            if bottomDate < i['uploadDate'] < topDate:
+                statsList.append(i[stat])
         return statsList
         
     
