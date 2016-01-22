@@ -254,15 +254,59 @@ class JsonDocuments():
                 dlatest['milesDriven'] = h_milesDriven - (h_milesDriven * efficiency) 
                 dlatest['hoursDriven'] = h_milesDriven  / h_avgSpeed
             return record
-        
         if docType == 5:
-            for r in [1000, 2000, 3000]:
-                for i in range(1,167):
-                    record = OrderedDict()
-                    record['team'] = i
-                    record['region'] = r
-                    record['managerName'] = names.get_full_name()
+            
+            efficiency = random.triangular(.75,.99)
+            months = [1,2,3,4,5,6,7,8,9,10,11,12]
+            q1= months[0:3]
+            q2= months[3:6]
+            q3= months[6:9]
+            q4= months[9:12]
+            qA= months[0:12]
+            
+            record = OrderedDict()
+            #record['vin'] = faker.md5()
+            record['_id'] = faker.uuid4()
+            #record['_id'] = faker.md5()
+            record['year'] = 2024
+            record['metrics'] = []
+            
+            for i in months:
+                
+                randSequence = random.sample(xrange(9999),30)
+                #record['metrics'][i][r] = OrderedDict()
+                #uploadDate = datetime(i,r,28)
+                
+                record['metrics'].append( OrderedDict() )
+                #record['metrics'].append( { 'uploadDate' : uploadDate } )
+                latest = record['metrics'][(len (record['metrics'])-1)]
+                latest['month'] = i
+                latest['milesDriven'] = randSequence[0]
+                latest['energyUsed'] = (randSequence[0] * 0.31) / efficiency
+                latest['tolls'] = random.randint(0, 500)
+                latest['avgSpeed'] = random.randint(30,50)
+                latest['topSpeed'] = random.randint(65, 135)
+                latest['elevationChange'] = random.randint(100, 10000)
+                latest['accelerationMiles'] = randSequence[0] * 0.3
+                latest['decelerationMiles'] = randSequence[0] * 0.1
+                latest['idleHours'] = random.randint(1,15)
+                latest['chargeHours'] = (randSequence[0] * 10) / 60 / 60
+                
+                    
+            record['employee'] = OrderedDict()
+            for i in range(0,1):
+                #record['employee'].append( OrderedDict())
+                #dlatest = record['employee'][(len (record['employee'])-1 )]
+                team = random.randint(1, 165)
+                region = random.randint(1, 3) * 1000
+                emp_id = random.randint(1,2500000)
+                record['employee']['Team'] = team
+                record['employee']['Region'] = region
+                record['employee']['employeeId'] = (emp_id + region + team)
+                
+                
             return record
+        
             
         
     def getRandMonth(self):
