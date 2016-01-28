@@ -307,8 +307,22 @@ class JsonDocuments():
                 
             return record
         
+        if docType == 6:
+            my_int=random.randint(1,13000)
+            my_price=random.randint(1,100)
+            record = OrderedDict()
+            record['site']  = OrderedDict()
+            record['site']['id'] = my_int
+            record['site']['Name'] = faker.catch_phrase()
+            record['item'] = OrderedDict()
+            record['item']['id'] = my_int * 3
+            record['item']['description'] = faker.catch_phrase()
+            record['prices'] = OrderedDict()
+            record['prices']['Breakfast'] = my_price/4
+            record['prices']['Lunch'] = my_price/2
+            record['prices']['Dinner'] = my_price
+            return record
             
-        
     def getRandMonth(self):
         return random.choice([1,2,3,4,5,6,7,8,9,10,11,12])
     
