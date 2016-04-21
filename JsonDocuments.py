@@ -13,11 +13,14 @@ import numpy as np
 import os
 from faker import Factory
 from collections import OrderedDict
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+
 
 class JsonDocuments():
-    
+    counter1 = 0
+    counter2 = 0
     def __init__(self):
+        
         pass
     
     def generateDocument(self, docType, message):
@@ -322,6 +325,59 @@ class JsonDocuments():
             record['prices']['Lunch'] = my_price/2
             record['prices']['Dinner'] = my_price
             return record
+        if docType == 7:
+            record = OrderedDict()
+            record['a'] = random.randint(1,100)
+            record['b'] = random.randint(1,300)
+            record['c'] = random.randint(1,50)
+            return record
+        if docType == 8:  #example for Heartland
+            record = OrderedDict()
+            record['siteID'] = faker.uuid4()
+            record['addres'] = faker.address()
+            record['Geo'] = [ 70.0, 76.0]
+            record['MenuItems'] = []
+            record['MenuItems'].append( OrderedDict( { "Name" : faker.word(), "DayPart" : "Breakfast", "Price" : faker.pyfloat(left_digits=None,right_digits=2, positive=True)}))          
+            record['MenuItems'].append( OrderedDict({ "Name" : faker.word(), "DayPart" : "Lunch", "Price" : faker.pyfloat(left_digits=None,right_digits=2, positive=True)}))          
+            record['MenuItems'].append( OrderedDict({ "Name" : faker.word(), "DayPart" : "Dinner", "Price" : faker.pyfloat(left_digits=None,right_digits=2, positive=True)}))          
+            return record
+            #print record
+        if docType == 9 : #example for Praxair
+           
+            if JsonDocuments.counter1 <= 550:
+                if JsonDocuments.counter2 <= 364:
+                    JsonDocuments.counter2 += 1    
+                else:
+                    JsonDocuments.counter2 = 0
+                    JsonDocuments.counter1 += 1
+                print JsonDocuments.counter1
+                print JsonDocuments.counter2
+        record = OrderedDict()
+        record['date'] = date.ctime(date.today() - timedelta(days=JsonDocuments.counter2))
+        record['pumpId'] = JsonDocuments.counter1
+        record['readings'] = OrderedDict()
+        for i in range(0,12):
+            record['readings'][str(i)] = OrderedDict()
+                
+            for r in range(0,3600,2):
+                #record['readings'].append(OrderedDict())#here we have readings][0][]adding the secs for that hour
+                #t = OrderedDict()
+                record['readings'][str(i)][str(r)] = OrderedDict()
+                record['readings'][str(i)][str(r)]['SrcPSI'] = random.randint(100,13000)
+                record['readings'][str(i)][str(r)]['TnkPSI'] = random.randint(100,13000)
+                record['readings'][str(i)][str(r)]['PstnPosPSI'] = random.randint(1,13000)
+                record['readings'][str(i)][str(r)]['PstnNegPSI'] = random.randint(1,13000)
+                record['readings'][str(i)][str(r)]['Temp'] = OrderedDict( {"Units" : "C", "value" : random.randint(1,100) })
+                record['readings'][str(i)][str(r)]['Vib'] = OrderedDict( { "TimeUnits" : "MS" , "DistUnits" : "MicroMeter", "TimeValue" : random.randint(1,1000), "DistValue" : random.randint(1,50)})
+                record['readings'][str(i)][str(r)]['RPM'] = random.randint(1,13000)
+                record['readings'][str(i)][str(r)]['Volt'] = random.randint(1,13000)
+                record['readings'][str(i)][str(r)]['Amp'] = random.randint(1,13000)
+                record['readings'][str(i)][str(r)]['Watts'] = random.randint(1,13000)
+                record['readings'][str(i)][str(r)]['Thrtl'] = random.randint(1,13000)
+                #record['readings']append(t)
+                #record['readings']=t
+        
+        return record   
             
     def getRandMonth(self):
         return random.choice([1,2,3,4,5,6,7,8,9,10,11,12])
