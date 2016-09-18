@@ -353,13 +353,14 @@ class JsonDocuments():
                 print JsonDocuments.counter1
                 print JsonDocuments.counter2
         record = OrderedDict()
-        record['date'] = date.ctime(date.today() - timedelta(days=JsonDocuments.counter2))
+        #record['date'] = date.today() - timedelta(days=JsonDocuments.counter2)
+        record['date'] = datetime.today() - timedelta(days=JsonDocuments.counter2)
         record['pumpId'] = JsonDocuments.counter1
         record['readings'] = OrderedDict()
-        for i in range(0,12):
+        for i in range(0,3):
             record['readings'][str(i)] = OrderedDict()
                 
-            for r in range(0,3600,2):
+            for r in range(0,10,2):
                 #record['readings'].append(OrderedDict())#here we have readings][0][]adding the secs for that hour
                 #t = OrderedDict()
                 record['readings'][str(i)][str(r)] = OrderedDict()
