@@ -22,6 +22,9 @@ from pymongo import MongoClient, InsertOne
 if __name__ == "myMultiprocess":
     print("Warning - This is intended to be run as a script, not a module.")
 
+logging.basicConfig(level=logging.INFO,
+                    format='(%(threadName)4s) %(levelname)s %(message)s',
+                    )
 
 
 def main():
@@ -51,10 +54,6 @@ def main():
     config["jdoc"] = JsonDocuments()
     jdoc = config["jdoc"]
 
-
-    logging.basicConfig(level=logging.INFO,
-                    format='(%(threadName)4s) %(levelname)s %(message)s',
-                    )
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "R:c:C:D:p:dhboms:r:U:P:t:x:T:", ["counter=", "process=", "level="])
@@ -269,7 +268,7 @@ def dropper(config):
     col.drop()
 
 def bulkworker(config):
-    
+
     jdoc = config["jdoc"]
     p = multiprocessing.current_process()
     logging.debug("You have entered the bulk writer process for process %s" % p.name)
