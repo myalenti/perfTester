@@ -28,7 +28,7 @@ class JsonDocuments():
         faker = Factory.create()
         faker.seed(os.getpid())
         if docType == 1:
-            randSequence = random.sample(xrange(9999),30)
+            randSequence = random.sample(range(9999),30)
             fakeText = faker.text()
             firstname = names.get_first_name()
             lastname = names.get_last_name()
