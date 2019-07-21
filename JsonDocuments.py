@@ -23,9 +23,9 @@ class JsonDocuments():
         
         pass
     
-    def generateDocument(self, docType, message):
+    def generateDocument(self, docType, message, faker):
         #self.dockType = docType
-        faker = Factory.create()
+        #faker = Factory.create()
         faker.seed(os.getpid())
         if docType == 1:
             randSequence = random.sample(range(9999),30)
