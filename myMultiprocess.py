@@ -49,7 +49,7 @@ def main():
                     format='(%(threadName)4s) %(levelname)s %(message)s',
                     )
 
-
+    #print("Starting Main")
 
 
     try:
