@@ -134,3 +134,21 @@ class JsonDocuments():
             for i in range(1,2000):
                 record[str(i) + "_extended"] = fakeMessage
             return record
+        if docType == 6:
+            fakeMessage = faker.text(15)
+            randoUni = random.uniform(0,30)
+            record = OrderedDict()
+            record["meid"] = random.randrange(11111111111111,99999999999999)
+            record["MDN"] = random.randrange(11111111111111,99999999999999)
+            record["Category"] = hex(random.randrange(11111111111111,99999999999999))
+            record["ESN"] = hex(random.randrange(11111111111111,99999999999999))
+            record["OtherId"] = hex(random.randrange(11111111111111,99999999999999))
+            for i in range(1,3):
+                record[str(i) + "_ipaddress"] = faker.ipv4_private()
+            for i in range(1,10):
+                record[str(i) + "_metric" ] = randoUni
+            for i in range(1,8):
+                record[str(i) + "_words"] = fakeMessage
+            for i in range(1,5):
+                record[str(i) + "_extended"] = fakeMessage
+            return record
