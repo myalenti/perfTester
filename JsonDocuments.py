@@ -7,6 +7,7 @@ import sys
 import getopt
 import ast
 import json
+import datetime
 import names
 import random
 import numpy as np
@@ -152,3 +153,41 @@ class JsonDocuments():
             for i in range(1,5):
                 record[str(i) + "_extended"] = fakeMessage
             return record
+        if docType == 7:
+            record = OrderedDict()
+            record["recipient"] =  OrderedDict()
+            record["recipient"]["Name"] = faker.name()
+            record["recipient"]["address"] = faker.street_name()
+            record["recipient"]["City"] = faker.city()
+            record["recipient"]["Zip"] = faker.postalcode()
+            record["recipient"]["country"] = faker.country()
+            record["recipient"]["Phone Number"] = faker.msisdn()
+            record["shipment"] = OrderedDict()
+            record["shipment"]["weight"] = random.randrange(1,5)
+            record["shipment"]["value"] = random.randrange(1,1000)
+            record["shipment"]["insurance"] = OrderedDict()
+            record["shipment"]["insurance"]["insured"] = True
+            record["shipment"]["insurance"]["value"] = random.randint(1, 100)
+            record["shipment"]["insurance"]["amount"] = random.randint(1,100)
+            record["shipment"]["ShipmentDate"] = datetime.today()
+            record["shipment"]["DeliveryDate"] = datetime.today()
+            record["shipment"]["truckId"] = random.randint(1000,50000)
+            record["shipment"]["Driver"] = random.randint(10000,150000)
+            record["shipment"]["trackingNo"] = faker.password(length=25, special_chars=False, digits=True, upper_case=True, lower_case=False)
+            record["adressee"] = OrderedDict()
+            record["adressee"]["address"] = faker.street_name()
+            record["adressee"]["City"] = faker.city()
+            record["adressee"]["Zip"] = faker.postalcode()
+            record["adressee"]["country"] = faker.country()
+            record["adressee"]["Phone Number"] = faker.msisdn()
+            record["billing"] = OrderedDict()
+            record["billing"]["acctNo"] = faker.password(length=16, special_chars=False, digits=True, upper_case=False, lower_case=False)
+            record["billing"]["acctType"] = random.choice( ["personal", "business", "cod"])
+            record["billing"]["name"] = faker.name()
+            record["billing"]["address"] = faker.address()
+            record["billing"]["invoicedAmount"] = random.randrange(1, 1000)
+            return record
+
+
+
+
